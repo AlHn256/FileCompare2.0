@@ -64,7 +64,6 @@ namespace FileCompare2._0
             if (str.IndexOf(Of) == -1) return string.Empty;
             return str.Substring(str.IndexOf(Of) + Of.Length);
         }
-
         public static string LastOf(this string str, char Of)
         {
             if (str == null) return str;
@@ -111,9 +110,7 @@ namespace FileCompare2._0
                     str = str.Replace(" ", "");
                     str = str.Replace("\t", "");
                 }
-                //for (int i = 0; i < str.Length; i++) if (str[i] == ' ' && i + 1 < str.Length) str = str.Substring(0, i + 1) + Char.ToUpper(str[i + 1]) + str.Substring(i + 2, str.Length - i - 2);
             }
-
             return str;
         }
 
@@ -142,114 +139,41 @@ namespace FileCompare2._0
             }
             return str;
         }
-    }
 
-    class TextEdit
-    {
-        //internal List<StrInfo> TextDivision(List<string> strList)
-        //{
-        //    List<StrInfo> strInfo = new List<StrInfo>();
-        //    if (strList.Count > 0)
-        //    {
-        //        string[] TextList = new string[strList.Count];
-        //        int i = 0;
-
-        //        foreach (string elem in strList)
-        //            TextList[i] = strList[i++].KnTextCorrect();
-
-        //        strInfo = TextDivision(TextList);
-        //    }
-
-        //    return strInfo;
-        //}
-
-        //internal static List<StrInfo> TextDivision(string[] TextList)
-        //{
-        //    List<StrInfo> strInfoList = new List<StrInfo>();
-
-        //    foreach (string elm in TextList)
-        //    {
-        //        StrInfo strInfo = new StrInfo() { Text = elm };
-
-        //        string intElm = string.Empty, strElm = string.Empty, result = string.Empty;
-        //        int nOfElem = 0;
-        //        bool fl = false, oldfl = false;
-        //        List<string> txtList = new List<string>();
-        //        List<string> nmbList = new List<string>();
-
-        //        for (int i = 0; i < strInfo.Text.Length; i++)
-        //        {
-
-        //            if (Convert.ToInt32(strInfo.Text[i]) >= 48 && Convert.ToInt32(strInfo.Text[i]) <= 57)
-        //            {
-        //                intElm += strInfo.Text[i];
-        //                fl = true;
-        //            }
-        //            else
-        //            {
-        //                strElm += strInfo.Text[i];
-        //                fl = false;
-        //            }
-
-        //            if (i != 0 && fl != oldfl)
-        //            {
-        //                nOfElem++;
-        //                if (oldfl)
-        //                {
-        //                    result = result + intElm + " ";
-        //                    nmbList.Add(intElm);
-        //                    intElm = string.Empty;
-        //                }
-        //                else
-        //                {
-        //                    result = result + strElm + " ";
-        //                    txtList.Add(strElm);
-        //                    strElm = string.Empty;
-        //                }
-        //            }
-
-        //            if (i == strInfo.Text.Length - 1)
-        //            {
-
-        //                if (fl)
-        //                {
-        //                    result = result + intElm;
-        //                    nmbList.Add(intElm);
-        //                    nOfElem++;
-        //                }
-        //                else
-        //                {
-        //                    result = result + strElm;
-        //                    txtList.Add(strElm);
-        //                    nOfElem++;
-        //                }
-        //            }
-        //            oldfl = fl;
-        //        }
-
-        //        strInfo.TextList = txtList;
-        //        strInfo.NumberList = nmbList;
-        //        strInfo.DivisionText = result;
-        //        strInfo.NOfElem = nOfElem;
-        //        Console.WriteLine(strInfo.Text + " => " + strInfo.DivisionText);
-        //        strInfoList.Add(strInfo);
-        //    }
-
-        //    return strInfoList;
-        //}
-
-        public string TextBetween(string Txt, string Fr, string To)
+        public static string HtmTextCorrect(this string str)
         {
-            string Str = "";
-            if (Txt.Length != 0 && Fr.Length != 0 && To.Length != 0)
+            if (str != null && str.Length > 0)
             {
-                if (Txt.IndexOf(Fr) != -1)
+                //str = str.Replace("'", "&#39;");
+                str = str.Replace("'", "");
+                str = str.Replace("\t", "   ");
+                //str = str.Replace("\"", "&#34;");
+                str = str.Replace("\"", "");
+                //str = str.Replace("\\", "&#92;");
+                str = str.Replace("\\", "");
+                str = str.Replace("[", "");
+                str = str.Replace("]", "");
+                str = str.Replace("\n", "<br>");
+            }
+            return str;
+        }
+
+        public static string InMidleOf(this string Str, string Fr, string To)
+        {
+            if (Str.Length != 0 && Fr.Length != 0 && To.Length != 0)
+            {
+                if (Str.IndexOf(Fr) != -1)
                 {
-                    Str = Txt.Substring(Txt.IndexOf(Fr) + Fr.Length);
+                    Str = Str.Substring(Str.IndexOf(Fr) + Fr.Length);
                     if (Str.IndexOf(To) != -1) Str = Str.Substring(0, Str.IndexOf(To));
                 }
             }
             return Str;
         }
+    }
+
+    class TextEdit
+    {
+       
     }
 }

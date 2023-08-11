@@ -26,14 +26,15 @@ namespace FileCompare2._0.Models
         {
             saveFile = file;
         }
-        //public void Work(object param)
+
         public void SaveFile(object param)
         {
             SynchronizationContext context = (SynchronizationContext)param;
 
             List<Files> FileList = new List<Files>();
-            //string[] rsh = new string[] { "*.m3u", "*.jpg", "*.exe", "*.txt", "*", "*.mp4", "*.mp3", "*.asf", "*.mpg", "*.avi", "*.webm", "*.gpx", "*.pdf", "*.png", "*.wav", "*.jpeg", "*.mpeg", "*.flv", "*.wma", "*.bmp", "*.doc", "*.gif", "*.tif", "*.htm", "*.html", "*.rtf", "*.ogg", "*.ttf", "*.dat", "*.wmv" }; //All
-            string[] rsh = new string[] { "*.mp4", "*.mp3", "*.wav", "*.webm", "*.ogg", "*.wma", "*.mpg", "*.avi", "*.mpeg", "*.wmv", "*.dat", "*.asf" }; // Media rsh
+            string[] rsh = new string[] { "*.*" };
+            //string[] rsh = new string[] { "*.m3u", "*.jpg", "*.exe", "*.txt", "*.mp4", "*.mp3", "*.asf", "*.mpg", "*.avi", "*.webm", "*.gpx", "*.pdf", "*.png", "*.wav", "*.jpeg", "*.mpeg", "*.flv", "*.wma", "*.bmp", "*.doc", "*.gif", "*.tif", "*.htm", "*.html", "*.rtf", "*.ogg", "*.ttf", "*.dat", "*.wmv" }; //All
+            //string[] rsh = new string[] { "*.mp4", "*.mp3", "*.wav", "*.webm", "*.ogg", "*.wma", "*.mpg", "*.avi", "*.mpeg", "*.wmv", "*.dat", "*.asf" }; // Media rsh
             //string[] rsh = new string[] { "*.mp4", "*.mp3", "*.wav", "*.webm", "*.ogg", "*.wma" }; // Audio rsh
             //string[] rsh = new string[] { "*.mpg", "*.avi", "*.mpeg", "*.wmv", "*.dat", "*.asf" }; // Video rsh
             if (Directory.Exists(serchDir))
@@ -56,10 +57,6 @@ namespace FileCompare2._0.Models
                         });
                         context.Send(OnProgressChanged, (i+1)*100 / FI.Length);
                     }
-                //Parallel.ForEach(FI, f =>
-                //{
-
-                //});
                 
                 string json = JsonSerializer.Serialize(FileList);
                 if (string.IsNullOrEmpty(saveFile)) saveFile = Directory.GetCurrentDirectory() + "\\" + Path.GetFileNameWithoutExtension(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName.Split('\\').Last()) + ".cmp";
@@ -70,6 +67,7 @@ namespace FileCompare2._0.Models
                 string text = "Saved to " + saveFile + "\n";
                 context.Send(OnSendMessag, text);
             }
+
             context.Send(OnWorkCompleted, _canselled);
         }
 

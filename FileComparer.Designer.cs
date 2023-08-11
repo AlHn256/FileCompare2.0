@@ -67,9 +67,9 @@
             // ChangeBut
             // 
             ChangeBut.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            ChangeBut.Location = new System.Drawing.Point(12, 130);
+            ChangeBut.Location = new System.Drawing.Point(889, 130);
             ChangeBut.Name = "ChangeBut";
-            ChangeBut.Size = new System.Drawing.Size(868, 37);
+            ChangeBut.Size = new System.Drawing.Size(65, 38);
             ChangeBut.TabIndex = 19;
             ChangeBut.Text = "<>";
             ChangeBut.UseVisualStyleBackColor = true;
@@ -77,11 +77,11 @@
             // 
             // ComparButton
             // 
-            ComparButton.Location = new System.Drawing.Point(889, 137);
+            ComparButton.Location = new System.Drawing.Point(12, 130);
             ComparButton.Name = "ComparButton";
-            ComparButton.Size = new System.Drawing.Size(65, 23);
+            ComparButton.Size = new System.Drawing.Size(871, 38);
             ComparButton.TabIndex = 22;
-            ComparButton.Text = "Compar";
+            ComparButton.Text = "Compare";
             ComparButton.UseVisualStyleBackColor = true;
             ComparButton.Click += new System.EventHandler(this.TestButton_Click);
             // 
@@ -140,6 +140,9 @@
             // 
             // RTB
             // 
+            this.RTB.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.RTB.Location = new System.Drawing.Point(12, 228);
             this.RTB.Name = "RTB";
             this.RTB.Size = new System.Drawing.Size(1360, 388);
@@ -202,6 +205,9 @@
             // 
             // StartButton
             // 
+            this.StartButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.StartButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.StartButton.Location = new System.Drawing.Point(960, 7);
             this.StartButton.Name = "StartButton";
             this.StartButton.Size = new System.Drawing.Size(412, 214);

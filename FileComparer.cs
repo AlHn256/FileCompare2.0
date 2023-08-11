@@ -19,12 +19,13 @@ namespace FileCompare2._0
         List<Files> FileList1 = new List<Files>();
         List<Files> FileList2 = new List<Files>();
         List<FCompare> MissingFiles = new List<FCompare>();
-        string MainDir = @"C:\Test\Music\";
+        string MainDir = @"E:\Test", SecDir = @"E:\Test2";
         public FileComparer()
         {
             InitializeComponent();
             FirstDirTextBox.Text = MainDir;
-            ChkFile();
+            SecondDirTextBox.Text = SecDir;
+            //ChkFile();
             Load += MainForm_Load;
         }
 
@@ -59,10 +60,11 @@ namespace FileCompare2._0
             _worker.SerchDir(searchDir);
             _worker.SaveFile(saveFile);
 
-            //StartButton.Enabled = false;
+            StartButton.Enabled = false;
 
             Thread thread = new Thread(_worker.SaveFile);
             thread.Start(_context);
+            //Task.Run(() => { _worker.SaveFile(_context); });
         }
 
         private void _worker_SendMessag(string text)
@@ -73,7 +75,8 @@ namespace FileCompare2._0
         private void _worker_WorkCompleted(bool cancelled)
         {
             RTB.Text += cancelled ? " Process canseled\n" : "Process finished\n";
-            //StartButton.Enabled = true;
+            //ChkFile();
+            StartButton.Enabled = true;
         }
 
         private void _worker_ProcessChanged(int progress)
@@ -88,32 +91,24 @@ namespace FileCompare2._0
             return file;
         }
 
+
         private void StartButton_Click(object sender, EventArgs e)
         {
-            List<Task> tasks = new List<Task>();
-            tasks.Add(Task.Run(() =>
+            if (!string.IsNullOrEmpty(SecondDirTextBox.Text) && !string.IsNullOrEmpty(FirstDirTextBox.Text))
             {
-                Worker(string.IsNullOrEmpty(FirstDirTextBox.Text) ? MainDir : FirstDirTextBox.Text, TextBoxFile1.Text);
-            }));
-
-            if (!string.IsNullOrEmpty(SecondDirTextBox.Text))
-            {
-                tasks.Add(Task.Run(() =>
-                {
-                    if (string.IsNullOrEmpty(TextBoxFile2.Text))
-                        TextBoxFile2.Text = Directory.GetCurrentDirectory() + "\\" + Path.GetFileNameWithoutExtension(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName.Split('\\').Last()) + " (2).cmp";
-                    Worker(SecondDirTextBox.Text, TextBoxFile2.Text);
-                }));
-            }
-
-            try
-            {
-                Task.WaitAll(tasks.ToArray());
-                //RTB.Text += "\nFinish";
-            }
-            catch (AggregateException err)
-            {
-                foreach (var ie in err.InnerExceptions) RTB.Text += "Err " + ie.GetType().Name + " : " + ie.Message + "\n";
+                Worker(FirstDirTextBox.Text, GetDefaultFile(1));
+                Worker(SecondDirTextBox.Text, GetDefaultFile(2));
+                //try
+                //{
+                //    string File1 = GetDefaultFile(1);
+                //    string File2 = GetDefaultFile(2);
+                //    Task.Run(() => { Worker(FirstDirTextBox.Text, File1); });
+                //    Task.Run(() => { Worker(SecondDirTextBox.Text, File2); });
+                //}
+                //catch (AggregateException err)
+                //{
+                //    foreach (var ie in err.InnerExceptions) RTB.Text += "Err " + ie.GetType().Name + " : " + ie.Message + "\n";
+                //}
             }
         }
 
@@ -170,43 +165,6 @@ namespace FileCompare2._0
             }
         }
 
-        private void GetFileList()
-        {
-            RTB.Text = string.Empty;
-            List<Files> FileList = new List<Files>();
-
-            //string[] rsh = new string[] { "*.m3u", "*.jpg", "*.exe", "*.txt", "*", "*.mp4", "*.mp3", "*.asf", "*.mpg", "*.avi", "*.webm", "*.gpx", "*.pdf", "*.png", "*.wav", "*.jpeg", "*.mpeg", "*.flv", "*.wma", "*.bmp", "*.doc", "*.gif", "*.tif", "*.htm", "*.html", "*.rtf", "*.ogg", "*.ttf", "*.dat", "*.wmv" }; //All
-            string[] rsh = new string[] { "*.mp4", "*.mp3", "*.wav", "*.webm", "*.ogg", "*.wma", "*.mpg", "*.avi", "*.mpeg", "*.wmv", "*.dat", "*.asf" }; // Media rsh
-            //string[] rsh = new string[] { "*.mp4", "*.mp3", "*.wav", "*.webm", "*.ogg", "*.wma" }; // Audio rsh
-            //string[] rsh = new string[] { "*.mpg", "*.avi", "*.mpeg", "*.wmv", "*.dat", "*.asf" }; // Video rsh
-
-            string serchDir = string.IsNullOrEmpty(FirstDirTextBox.Text) ? MainDir : FirstDirTextBox.Text;
-
-            if (Directory.Exists(serchDir))
-            {
-                string FN = "";
-                DirectoryInfo DI = new DirectoryInfo(serchDir);
-                FileInfo[] FI = rsh.SelectMany(fi => DI.GetFiles(fi, SearchOption.AllDirectories)).Distinct().ToArray();
-
-                if (FI.Length > 0)
-                    Parallel.ForEach(FI, f =>
-                    {
-                        FileList.Add(new Files
-                        {
-                            Name = f.FullName,
-                            ShortName = f.Name,
-                            Date = f.CreationTime,
-                            Hash = fileEdit.ComputeMD5Checksum(f.FullName),
-                            Sise = f.Length
-                        });
-                    });
-
-                string json = JsonSerializer.Serialize(FileList);
-                if (string.IsNullOrEmpty(TextBoxFile1.Text)) TextBoxFile1.Text = Directory.GetCurrentDirectory() + "\\" + Path.GetFileNameWithoutExtension(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName.Split('\\').Last()) + ".cmp";
-                File.WriteAllText(TextBoxFile1.Text, json);
-            }
-        }
-
         private void FirstDirBtn_Click(object sender, EventArgs e)
         {
             using (var dialog = new OpenFileDialog())
@@ -221,13 +179,8 @@ namespace FileCompare2._0
 
         private void FirstDirBtn_Click_1(object sender, EventArgs e)
         {
-            FolderBrowserDialog FBD = new FolderBrowserDialog()
-            {
-                RootFolder = Environment.SpecialFolder.CommonDesktopDirectory,
-                ShowNewFolderButton = true
-            };
-
-            if (FBD.ShowDialog() == DialogResult.OK)FirstDirTextBox.Text = FBD.SelectedPath;
+            FolderBrowserDialog FBD = new FolderBrowserDialog();
+            if (FBD.ShowDialog() == DialogResult.OK) FirstDirTextBox.Text = FBD.SelectedPath;
         }
 
         private void SecondDirBtn_Click(object sender, EventArgs e)
