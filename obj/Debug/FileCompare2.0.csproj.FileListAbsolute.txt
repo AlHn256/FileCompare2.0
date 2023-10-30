@@ -77,7 +77,6 @@ C:\CSH\FileCompare2.0Git\FileCompare2.0\bin\Debug\System.Text.Encodings.Web.xml
 C:\CSH\FileCompare2.0Git\FileCompare2.0\bin\Debug\System.Text.Json.xml
 C:\CSH\FileCompare2.0Git\FileCompare2.0\bin\Debug\System.Threading.Tasks.Extensions.xml
 C:\CSH\FileCompare2.0Git\FileCompare2.0\bin\Debug\System.ValueTuple.xml
-C:\CSH\FileCompare2.0Git\FileCompare2.0\obj\Debug\FileCompare2.0.csprojAssemblyReference.cache
 C:\CSH\FileCompare2.0Git\FileCompare2.0\obj\Debug\FileCompare2._0.FileComparer.resources
 C:\CSH\FileCompare2.0Git\FileCompare2.0\obj\Debug\FileCompare2._0.Properties.Resources.resources
 C:\CSH\FileCompare2.0Git\FileCompare2.0\obj\Debug\FileCompare2.0.csproj.GenerateResource.cache
@@ -85,3 +84,4 @@ C:\CSH\FileCompare2.0Git\FileCompare2.0\obj\Debug\FileCompare2.0.csproj.CoreComp
 C:\CSH\FileCompare2.0Git\FileCompare2.0\obj\Debug\FileCompare2.0.csproj.CopyComplete
 C:\CSH\FileCompare2.0Git\FileCompare2.0\obj\Debug\FileCompare2.0.exe
 C:\CSH\FileCompare2.0Git\FileCompare2.0\obj\Debug\FileCompare2.0.pdb
+C:\CSH\FileCompare2.0Git\FileCompare2.0\obj\Debug\FileCompare2.0.csproj.AssemblyReference.cache

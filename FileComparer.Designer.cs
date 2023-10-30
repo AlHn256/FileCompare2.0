@@ -30,7 +30,7 @@
         {
             System.Windows.Forms.Button FirstFileBtn;
             System.Windows.Forms.Button ChangeBut;
-            System.Windows.Forms.Button ComparButton;
+            //System.Windows.Forms.Button ComparButton;
             System.Windows.Forms.Button CopyFilesButton;
             System.Windows.Forms.Button FirstDirBtn;
             System.Windows.Forms.Button SecondDirBtn;
@@ -45,10 +45,10 @@
             this.StopButton = new System.Windows.Forms.Button();
             this.CopyDirTextBox = new System.Windows.Forms.TextBox();
             this.StartButton = new System.Windows.Forms.Button();
+            this.ComparButton = new System.Windows.Forms.Button();
             this.SecondDirTextBox = new System.Windows.Forms.TextBox();
             FirstFileBtn = new System.Windows.Forms.Button();
             ChangeBut = new System.Windows.Forms.Button();
-            ComparButton = new System.Windows.Forms.Button();
             CopyFilesButton = new System.Windows.Forms.Button();
             FirstDirBtn = new System.Windows.Forms.Button();
             SecondDirBtn = new System.Windows.Forms.Button();
@@ -83,7 +83,8 @@
             ComparButton.TabIndex = 22;
             ComparButton.Text = "Compare";
             ComparButton.UseVisualStyleBackColor = true;
-            ComparButton.Click += new System.EventHandler(this.TestButton_Click);
+            ComparButton.Click += new System.EventHandler(this.ComparButton_Click);
+
             // 
             // CopyFilesButton
             // 
@@ -119,6 +120,7 @@
             // 
             this.TextBoxFile2.Location = new System.Drawing.Point(12, 173);
             this.TextBoxFile2.Name = "TextBoxFile2";
+            this.TextBoxFile2.Text = @"C:\CSH\FileCompare2.0Git\FileCompare2.0\bin\Debug\FileCompare2.0 (2).cmp";
             this.TextBoxFile2.Size = new System.Drawing.Size(868, 20);
             this.TextBoxFile2.TabIndex = 18;
             this.TextBoxFile2.TextChanged += new System.EventHandler(this.TextBoxFile2_TextChanged);
@@ -127,6 +129,7 @@
             // 
             this.TextBoxFile1.Location = new System.Drawing.Point(12, 104);
             this.TextBoxFile1.Name = "TextBoxFile1";
+            this.TextBoxFile1.Text = @"C:\CSH\FileCompare2.0Git\FileCompare2.0\bin\Debug\FileCompare2.0.cmp";
             this.TextBoxFile1.Size = new System.Drawing.Size(868, 20);
             this.TextBoxFile1.TabIndex = 14;
             this.TextBoxFile1.TextChanged += new System.EventHandler(this.TextBoxFile1_TextChanged);
@@ -135,6 +138,7 @@
             // 
             this.FirstDirTextBox.Location = new System.Drawing.Point(12, 10);
             this.FirstDirTextBox.Name = "FirstDirTextBox";
+            this.FirstDirTextBox.Text = @"E:\MUSIK";
             this.FirstDirTextBox.Size = new System.Drawing.Size(868, 20);
             this.FirstDirTextBox.TabIndex = 13;
             // 
@@ -220,6 +224,7 @@
             // 
             this.SecondDirTextBox.Location = new System.Drawing.Point(12, 65);
             this.SecondDirTextBox.Name = "SecondDirTextBox";
+            this.SecondDirTextBox.Text = @"E:\Test3";
             this.SecondDirTextBox.Size = new System.Drawing.Size(868, 20);
             this.SecondDirTextBox.TabIndex = 29;
             // 
@@ -265,6 +270,7 @@
         private System.Windows.Forms.Button StopButton;
         internal System.Windows.Forms.TextBox CopyDirTextBox;
         private System.Windows.Forms.Button StartButton;
+        private System.Windows.Forms.Button ComparButton;
         internal System.Windows.Forms.TextBox SecondDirTextBox;
     }
 }

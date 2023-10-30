@@ -13,6 +13,11 @@ namespace FileCompare2._0.Models
         private string serchDir = string.Empty;
         private string saveFile = string.Empty;
         private FileEdit fileEdit = new FileEdit();
+        public string[] searchRsh = new string[] { "*.*" };
+        //string[] rsh = new string[] { "*.m3u", "*.jpg", "*.exe", "*.txt", "*.mp4", "*.mp3", "*.asf", "*.mpg", "*.avi", "*.webm", "*.gpx", "*.pdf", "*.png", "*.wav", "*.jpeg", "*.mpeg", "*.flv", "*.wma", "*.bmp", "*.doc", "*.gif", "*.tif", "*.htm", "*.html", "*.rtf", "*.ogg", "*.ttf", "*.dat", "*.wmv" }; //All
+        //string[] rsh = new string[] { "*.mp4", "*.mp3", "*.wav", "*.webm", "*.ogg", "*.wma", "*.mpg", "*.avi", "*.mpeg", "*.wmv", "*.dat", "*.asf" }; // Media rsh
+        //string[] rsh = new string[] { "*.mp4", "*.mp3", "*.wav", "*.webm", "*.ogg", "*.wma" }; // Audio rsh
+        //string[] rsh = new string[] { "*.mpg", "*.avi", "*.mpeg", "*.wmv", "*.dat", "*.asf" }; // Video rsh
         public void Cansel()
         {
             _canselled = true;
@@ -30,18 +35,11 @@ namespace FileCompare2._0.Models
         public void SaveFile(object param)
         {
             SynchronizationContext context = (SynchronizationContext)param;
-
             List<Files> FileList = new List<Files>();
-            string[] rsh = new string[] { "*.*" };
-            //string[] rsh = new string[] { "*.m3u", "*.jpg", "*.exe", "*.txt", "*.mp4", "*.mp3", "*.asf", "*.mpg", "*.avi", "*.webm", "*.gpx", "*.pdf", "*.png", "*.wav", "*.jpeg", "*.mpeg", "*.flv", "*.wma", "*.bmp", "*.doc", "*.gif", "*.tif", "*.htm", "*.html", "*.rtf", "*.ogg", "*.ttf", "*.dat", "*.wmv" }; //All
-            //string[] rsh = new string[] { "*.mp4", "*.mp3", "*.wav", "*.webm", "*.ogg", "*.wma", "*.mpg", "*.avi", "*.mpeg", "*.wmv", "*.dat", "*.asf" }; // Media rsh
-            //string[] rsh = new string[] { "*.mp4", "*.mp3", "*.wav", "*.webm", "*.ogg", "*.wma" }; // Audio rsh
-            //string[] rsh = new string[] { "*.mpg", "*.avi", "*.mpeg", "*.wmv", "*.dat", "*.asf" }; // Video rsh
             if (Directory.Exists(serchDir))
             {
-                //string FN = "";
                 DirectoryInfo DI = new DirectoryInfo(serchDir);
-                FileInfo[] FI = rsh.SelectMany(fi => DI.GetFiles(fi, SearchOption.AllDirectories)).Distinct().ToArray();
+                FileInfo[] FI = searchRsh.SelectMany(fi => DI.GetFiles(fi, SearchOption.AllDirectories)).Distinct().ToArray();
 
                 if (FI.Length > 0)
                     for(int i =0; i< FI.Length; i++)

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FileCompare2._0.Models
 {
@@ -13,10 +9,12 @@ namespace FileCompare2._0.Models
         public string Hash { get; set; }
         public long Sise { get; set; }
         public DateTime Date { get; set; }
-        public bool exist { get; set; }
-        public bool delite { get; set; }
+        public bool? exist { get; set; }
+        public bool? delite { get; set; }
         public bool renamed { get; set; }
         public bool replased { get; set; }
+        public string moveTo { get; set; }
         public bool changed { get; set; }
+        public int? Copy { get; set; }
     }
 }

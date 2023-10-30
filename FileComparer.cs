@@ -8,23 +8,21 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Text.Json;
-//using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
-//using static System.Net.WebRequestMethods;
 
 namespace FileCompare2._0
 {
     public partial class FileComparer : Form
     {
         FileEdit fileEdit = new FileEdit();
-        List<Files> FileList1 = new List<Files>();
         List<Files> FileList2 = new List<Files>();
+        List<FCompare> FCompareFileList1 = new List<FCompare>();
+        List<FCompare> FCompareFileList2 = new List<FCompare>();
         List<FCompare> MissingFiles = new List<FCompare>();
-        string MainDir = @"E:\Test", SecDir = @"E:\Test2";
+        
         public FileComparer()
         {
             InitializeComponent();
-            FirstDirTextBox.Text = MainDir;
-            SecondDirTextBox.Text = SecDir;
+
             //ChkFile();
             Load += MainForm_Load;
         }
@@ -51,7 +49,7 @@ namespace FileCompare2._0
         private object _context;
 
 
-        public void Worker(string searchDir, string saveFile)
+        public Task Worker(string searchDir, string saveFile)
         {
             _worker = new Worker();
             _worker.WorkCompleted += _worker_WorkCompleted;
@@ -62,8 +60,11 @@ namespace FileCompare2._0
 
             StartButton.Enabled = false;
 
-            Thread thread = new Thread(_worker.SaveFile);
-            thread.Start(_context);
+            //Thread thread = new Thread(_worker.SaveFile);
+            //thread.Start(_context);
+
+            Task T = Task.Run(() => { _worker.SaveFile(_context); });
+            return T;
             //Task.Run(() => { _worker.SaveFile(_context); });
         }
 
@@ -92,78 +93,199 @@ namespace FileCompare2._0
         }
 
 
-        private void StartButton_Click(object sender, EventArgs e)
+        async private void StartButton_Click(object sender, EventArgs e)
         {
             if (!string.IsNullOrEmpty(SecondDirTextBox.Text) && !string.IsNullOrEmpty(FirstDirTextBox.Text))
             {
-                Worker(FirstDirTextBox.Text, GetDefaultFile(1));
-                Worker(SecondDirTextBox.Text, GetDefaultFile(2));
-                //try
-                //{
-                //    string File1 = GetDefaultFile(1);
-                //    string File2 = GetDefaultFile(2);
-                //    Task.Run(() => { Worker(FirstDirTextBox.Text, File1); });
-                //    Task.Run(() => { Worker(SecondDirTextBox.Text, File2); });
-                //}
-                //catch (AggregateException err)
-                //{
-                //    foreach (var ie in err.InnerExceptions) RTB.Text += "Err " + ie.GetType().Name + " : " + ie.Message + "\n";
-                //}
-            }
-        }
-
-        private void GetAllRsh()
-        {
-            List<Files> FileList = new List<Files>();
-            string serchDir = string.IsNullOrEmpty(FirstDirTextBox.Text) ? MainDir : FirstDirTextBox.Text;
-            RTB.Text = "SerchDir - " + serchDir + "\n";
-
-            if (Directory.Exists(serchDir))
-            {
-                DirectoryInfo DI = new DirectoryInfo(serchDir);
-                FileInfo[] FI = DI.GetFiles("*", SearchOption.AllDirectories);
-                var rsh = FI.Select(f => f.Extension.ToLower()).Distinct().ToArray();
-
-                foreach (var elem in rsh)
+                try
                 {
-                    RTB.Text += "\"*" + elem + ", ";
+                    string File1 = GetDefaultFile(1);
+                    string File2 = GetDefaultFile(2);
+                    await Worker(FirstDirTextBox.Text, File1);
+                    if (TextBoxFile1.Text != File1) TextBoxFile1.Text = File1;
+                    else F1Label.Text = LoadFile(TextBoxFile1.Text, out FCompareFileList1);
+                    await Worker(SecondDirTextBox.Text, File2);
+                    if (TextBoxFile2.Text == File2) F2Label.Text = LoadFile(TextBoxFile2.Text, out FCompareFileList2);
+                    else TextBoxFile2.Text = File2;
+                }
+                catch (AggregateException err)
+                {
+                    foreach (var ie in err.InnerExceptions) RTB.Text += "Err " + ie.GetType().Name + " : " + ie.Message + "\n";
                 }
             }
         }
 
-        private void TestButton_Click(object sender, EventArgs e)
+        private void ComparButton_Click(object sender, EventArgs e)
         {
-            if (FileList1.Count() != 0 && FileList2.Count() != 0)
+            if (ComparButton.Text == "Compare")
+            {   
+                FindDifference();
+                ComparButton.Text = "Apply";
+            }
+            else
             {
+                ApplyChanges(FCompareFileList1, FCompareFileList2);
+                ComparButton.Text = "Compare";
+            }
+        }
 
-                MissingFiles = mapFCompare(FileList1).ToList();// FileList1.Take(10).ToList();
-                var mas2 = mapFCompare(FileList2).ToList();
+        private void FindDifference()
+        {
+            if (FCompareFileList1.Count() != 0)
+            {
+                string txt = string.Empty;
 
-                for (int i = MissingFiles.Count() - 1; i > -1; i--)
+                for (int i = 0; i < FCompareFileList1.Count() - 1; i++)
                 {
-                    for (int y = mas2.Count() - 1; y > -1; y--)
+                    if (FCompareFileList1[i].Copy != null) continue;
+
+                    string hashI = FCompareFileList1[i].Hash;
+                    for (int j = i + 1; j < FCompareFileList1.Count(); j++)
                     {
-                        if (MissingFiles[i].Hash == mas2[y].Hash)
+                        if (FCompareFileList1[j].Copy != null) continue;
+                        if (hashI == FCompareFileList1[j].Hash)
                         {
-                            MissingFiles[i].exist = true;
-                            mas2.RemoveAt(y);
-                            break;
+                            FCompareFileList1[i].Copy = i;
+                            FCompareFileList1[j].Copy = i;
                         }
                     }
                 }
 
-                string text = string.Empty;
-                int z = 0;
-                MissingFiles = MissingFiles.Where(x => !x.exist).ToList();
-                for (int i = MissingFiles.Count() - 1; i > -1; i--)
-                    text += z++ + " " + MissingFiles[i].Name + "\n";
+                var copyFile = (from x in FCompareFileList1
+                                where (x.Copy != null)
+                                select new { x.Hash, x.Copy }).Distinct().OrderBy(x => x.Copy).ToList();
 
-                MissFilesLab.Text = "Missing Files " + MissingFiles.Count().ToString();
-                RTB.Text = text;
+                for (int i = 0; i < FCompareFileList2.Count(); i++)
+                {
+                    foreach (var elem in copyFile)
+                    {
+                        if (FCompareFileList2[i].Hash == elem.Hash) FCompareFileList2[i].Copy = elem.Copy;
+                    }
+                }
 
-                if(string.IsNullOrEmpty(CopyDirTextBox.Text))GetMainSaveDir();
+
+
+                for (int i = FCompareFileList1.Count() - 1; i > -1; i--)
+                {
+                    if (FCompareFileList1[i].Copy != null) continue;
+
+                    bool exist = false;
+                    for (int y = FCompareFileList2.Count() - 1; y > -1; y--)
+                    {
+                        if (FCompareFileList2[y].Copy != null) continue;
+                        if (FCompareFileList1[i].Hash == FCompareFileList2[y].Hash)
+                        {
+                            var f1 = FCompareFileList1[i];
+                            var f2 = FCompareFileList2[y];
+
+                            var s1 = f1.Name.LastOf(FirstDirTextBox.Text);
+                            var s2 = f2.Name.LastOf(SecondDirTextBox.Text);
+                            if (s1 != s2 && FCompareFileList1[i].ShortName == FCompareFileList2[y].ShortName)
+                            {
+                                FCompareFileList1[i].replased = true;
+                                FCompareFileList2[y].replased = true;
+                                FCompareFileList2[y].moveTo = SecondDirTextBox.Text + s1;
+                            }
+                            else
+                            {
+                                FCompareFileList2.RemoveAt(y);
+                            }
+                            exist = true;
+                            break;
+                        }
+                    }
+
+                    FCompareFileList1[i].exist = exist;
+                    if (!exist) txt += FCompareFileList1[i].Name + " - to copy\n";
+                }
+
+                var FReplased = FCompareFileList2.Where(x => x.replased == true && x.Copy==null).ToList();
+                var FCopy1 = FCompareFileList1.Where(x =>  x.Copy != null).ToList();
+                var FCopy2 = FCompareFileList2.Where(x => x.Copy != null).ToList();
+
+                FCompareFileList1 = FCompareFileList1.Where(x => x.Copy == null && x.exist == false).ToList();
+                FCompareFileList2 = FCompareFileList2.Where(x => x.Copy == null && x.replased == false).ToList();
+
+                if (FCompareFileList2.Count() != 0)
+                    foreach (var elem in FCompareFileList2)
+                        txt += elem.Name + " - for Delete\n";
+
+                RTB.Text = FCompareFileList2.Count() + " - Files For Delete \\ " + FCopy1.Count() + " - FCopy1 \\ " + FCopy2.Count() + " - FCopy2 \\ "
+                    + FReplased.Count() + " - FReplased \\ " + FCompareFileList1.Count() + " - Files To Copy\n\n" + txt;
             }
         }
+
+        private void ApplyChanges(List<FCompare> FilesToCopy, List<FCompare> FilesForDelete)
+        {
+            string txt = string.Empty;
+
+            
+
+            var FilesForReplas = FilesForDelete.Where(x => x.replased).ToList();
+            foreach (var file in FilesForReplas)
+            {
+                if (File.Exists(file.Name))
+                {
+                    try
+                    {
+                        if (!string.IsNullOrEmpty(file.Name) && !string.IsNullOrEmpty(file.moveTo))
+                        {
+                            string Dir = Path.GetDirectoryName(file.moveTo);
+                            if (fileEdit.ChkDir(Dir))File.Move(file.Name, file.moveTo);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        txt += file.Name + " - !!!ERRRR!!!  - " + ex.Message + "\n";
+                    }
+
+                    if (File.Exists(file.moveTo))
+                    {
+                        txt += file.moveTo + " - moved!\n";
+                    }
+                }
+            }
+
+            FilesForDelete = FilesForDelete.Where(x => !x.replased).ToList();
+            foreach (var file in FilesForDelete)
+            {
+                if (File.Exists(file.Name))
+                {
+                    try
+                    {
+                        File.SetAttributes(file.Name, FileAttributes.Normal);
+                        File.Delete(file.Name);
+                    }
+                    catch (Exception ex)
+                    {
+                        txt += file.Name + " - !!!ERRRR!!!  - " + ex.Message + "\n";
+                    }
+
+                    if (!File.Exists(file.Name))
+                    {
+                        txt += file.Name + " - deleted!\n";
+                    }
+                }
+            }
+
+            foreach (var file in FilesToCopy)
+            {
+                string targetFile = fileEdit.DirFile(SecondDirTextBox.Text, file.Name.LastOf(FirstDirTextBox.Text));
+
+                //CopyFile(file.Name, targetFile);
+                if (!string.IsNullOrEmpty(file.Name) && !string.IsNullOrEmpty(targetFile) && File.Exists(file.Name))
+                {
+                    string Dir = Path.GetDirectoryName(targetFile);
+                    if (fileEdit.ChkDir(Dir)) File.Copy(file.Name, targetFile);
+                }
+
+                if (File.Exists(file.Name))txt += file.Name + " - file copied\n";
+                else txt += file.Name + " - !!!COPYERRRR!!!\n";
+            }
+
+            RTB.Text = txt;
+        }
+
 
         private void FirstDirBtn_Click(object sender, EventArgs e)
         {
@@ -186,37 +308,40 @@ namespace FileCompare2._0
         private void SecondDirBtn_Click(object sender, EventArgs e)
         {
             FolderBrowserDialog FBD = new FolderBrowserDialog();
-            if (FBD.ShowDialog() == DialogResult.OK)SecondDirTextBox.Text = FBD.SelectedPath;
+            if (FBD.ShowDialog() == DialogResult.OK) SecondDirTextBox.Text = FBD.SelectedPath;
         }
 
         private void ChangeBut_Click(object sender, EventArgs e)
         {
             string tmp = TextBoxFile2.Text;
             TextBoxFile2.Text = TextBoxFile1.Text;
-            TextBoxFile1.Text=tmp;
+            TextBoxFile1.Text = tmp;
         }
 
-        private string LoadFile(string file, out List<Files> FileList)
+        private string LoadFile(string file, out List<FCompare> fCompare)
         {
-            FileList = new List<Files>();
+            fCompare = new List<FCompare>();
             if (File.Exists(file))
             {
+                List<Files> FileList = new List<Files>();
                 string readText = File.ReadAllText(file);
                 FileList = JsonSerializer.Deserialize<List<Files>>(readText);
-                if (FileList.Count > 0)  return FileList.Count.ToString();
+                fCompare = mapFCompare(FileList);
+
+                if (FileList.Count > 0) return FileList.Count.ToString();
                 else return "0";
             }
-            else return "0";
+            return "0";
         }
 
         private void TextBoxFile1_TextChanged(object sender, EventArgs e)
         {
-            F1Label.Text = LoadFile(TextBoxFile1.Text, out FileList1);
+            F1Label.Text = LoadFile(TextBoxFile1.Text, out FCompareFileList1);
         }
 
         private void TextBoxFile2_TextChanged(object sender, EventArgs e)
         {
-            F2Label.Text =  LoadFile(TextBoxFile2.Text, out FileList2);
+            F2Label.Text = LoadFile(TextBoxFile2.Text, out FCompareFileList2);
         }
 
         private List<FCompare> mapFCompare(List<Files> filesList)
@@ -242,7 +367,7 @@ namespace FileCompare2._0
             string resultDir = string.Empty;
             if (FileList2.Count() > 0)
             {
-                int minelem= FileList2[0].Name.QuantityOf('\\');
+                int minelem = FileList2[0].Name.QuantityOf('\\');
                 foreach (var elem in FileList2)
                 {
                     int x = elem.Name.QuantityOf('\\');
@@ -253,10 +378,10 @@ namespace FileCompare2._0
 
                 var resultDirMass = FileList2[0].Name.Split('\\').Take(minelem).ToArray();
 
-                for (int i=0; i< FileList2.Count(); i++)
+                for (int i = 0; i < FileList2.Count(); i++)
                 {
                     var mas = FileList2[i].Name.Split('\\').Take(minelem).ToArray();
-                    for(int y = 0; y< resultDirMass.Count(); y++)
+                    for (int y = 0; y < resultDirMass.Count(); y++)
                     {
                         if (resultDirMass[y] != mas[y])
                         {
@@ -276,27 +401,13 @@ namespace FileCompare2._0
 
         private void CopyFilesButton_Click(object sender, EventArgs e)
         {
-            if(MissingFiles.Count>0)
-            {
-                RTB.Text = string.Empty;
-                string aasd = "MUSIK";
+            string[] searchRsh = new string[] { "*.*" };
+            DirectoryInfo DI = new DirectoryInfo(FirstDirTextBox.Text);
+            string[] files = Directory.GetFiles(FirstDirTextBox.Text);
+            string[] dirs = Directory.GetDirectories(FirstDirTextBox.Text);
+            FileInfo[] FI = searchRsh.SelectMany(fi => DI.GetFiles(fi, SearchOption.AllDirectories)).Distinct().ToArray();
+            FileInfo[] FI2 =  DI.GetFiles("*",SearchOption.AllDirectories).Distinct().ToArray();
 
-                for(int i = 0; i< MissingFiles.Count; i++)
-                {
-                    string To = CopyDirTextBox.Text + MissingFiles[i].Name.Substring(MissingFiles[i].Name.IndexOf(aasd) + aasd.Length + 1);
-
-                    var dir = To.FirstOf('\\', 88);
-                    fileEdit.ChkDir(dir);
-
-
-                    RTB.Text += "From " + MissingFiles[i].Name + "\nTo - " + To +"\n";
-                    if (File.Exists(MissingFiles[i].Name))
-                    {
-                        File.Copy(MissingFiles[i].Name, To, true);
-                    }
-                }
-
-            }
         }
 
         private void StopButton_Click(object sender, EventArgs e)
@@ -304,10 +415,32 @@ namespace FileCompare2._0
             if (_worker != null) _worker.Cansel();
         }
 
-        private void Test_Click(object sender, EventArgs e)
+        private void GetAllRsh()
         {
-            GetAllRsh();
+            //List<Files> FileList = new List<Files>();
+            //string serchDir = string.IsNullOrEmpty(FirstDirTextBox.Text) ? MainDir : FirstDirTextBox.Text;
+            //RTB.Text = "SerchDir - " + serchDir + "\n";
+
+            //if (Directory.Exists(serchDir))
+            //{
+            //    DirectoryInfo DI = new DirectoryInfo(serchDir);
+            //    FileInfo[] FI = DI.GetFiles("*", SearchOption.AllDirectories);
+            //    var rsh = FI.Select(f => f.Extension.ToLower()).Distinct().ToArray();
+
+            //    foreach (var elem in rsh)
+            //    {
+            //        RTB.Text += "\"*" + elem + ", ";
+            //    }
+            //}
         }
 
+        private void CopyFile(string copyFile, string targetFile)
+        {
+            if (!string.IsNullOrEmpty(copyFile) && !string.IsNullOrEmpty(targetFile)&& File.Exists(copyFile))
+            {
+                string Dir = Path.GetDirectoryName(targetFile);
+                if (fileEdit.ChkDir(Dir))File.Copy(copyFile, targetFile);
+            }
+        }
     }
 }
